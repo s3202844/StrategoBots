@@ -1,7 +1,7 @@
 import numpy as np
 
-from Scorer import step_score
-from Random import RandomSelection
+from scorer import step_score
+from rnd_bot import RandomSelection
 from stratego_env import StrategoMultiAgentEnv, ObservationComponents, ObservationModes, GameVersions
 
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     for _ in range(number_of_games):
         print("New Game Started")
         obs = env.reset()
-        pre_obs = None
+        pre_obs, pre = None, None
         while True:
 
             assert len(obs.keys()) == 1
@@ -28,7 +28,11 @@ if __name__ == '__main__':
             assert current_player == 1 or current_player == -1
 
             if current_player == 1:
-                step_score(pre_obs, obs, current_player)
+                if pre_obs != None:
+                    pre = pre_obs[current_player]["partial_observation"]
+                curr = obs[current_player]["partial_observation"]
+                score = step_score(pre, curr)
+                print(score)
                 pre_obs = obs
 
             current_player_action = RandomSelection(
