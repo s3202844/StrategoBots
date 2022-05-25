@@ -1,10 +1,9 @@
 import numpy as np
 
-from stratego_env import ObservationComponents
 
-
-def RandomSelection(current_player, obs_from_env):
-    valid_actions_mask = obs_from_env[current_player][ObservationComponents.VALID_ACTIONS_MASK.value]
+def random_act(obs_from_env):
+    current_player = list(obs_from_env.keys())[0]
+    valid_actions_mask = obs_from_env[current_player]["valid_actions_mask"]
 
     valid_actions_mask_1D = np.reshape(valid_actions_mask, -1)
     actions = []

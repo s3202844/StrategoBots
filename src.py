@@ -1,8 +1,8 @@
 import numpy as np
+from mcts_bot import mcts_act
 
-from scorer import step_score
-from rnd_bot import RandomSelection
-from stratego_env import StrategoMultiAgentEnv, ObservationComponents, ObservationModes, GameVersions
+from rnd_bot import random_act
+from stratego_env import StrategoMultiAgentEnv, ObservationModes, GameVersions
 
 
 if __name__ == '__main__':
@@ -15,12 +15,11 @@ if __name__ == '__main__':
 
     env = StrategoMultiAgentEnv(env_config=config)
 
-    number_of_games = 1
+    number_of_games = 10
     wons = [0, 0]
     for _ in range(number_of_games):
         print("New Game Started")
         obs = env.reset()
-        pre_obs, pre = None, None
         while True:
 
             assert len(obs.keys()) == 1
@@ -28,19 +27,13 @@ if __name__ == '__main__':
             assert current_player == 1 or current_player == -1
 
             if current_player == 1:
-                if pre_obs != None:
-                    pre = pre_obs[current_player]["partial_observation"]
-                curr = obs[current_player]["partial_observation"]
-                score = step_score(pre, curr)
-                print(obs[1].keys())
-                pre_obs = obs
-
-            current_player_action = RandomSelection(
-                current_player=current_player, obs_from_env=obs)
+                current_player_action = mcts_act(env, obs)
+            else:
+                current_player_action = random_act(obs)
 
             obs, rew, done, info = env.step(
                 action_dict={current_player: current_player_action})
-            # print(f"Player {current_player} made move {current_player_action}")
+            print(f"Player {current_player} made move {current_player_action}")
 
             if done["__all__"]:
                 print(

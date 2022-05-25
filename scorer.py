@@ -1,9 +1,5 @@
 import numpy as np
 
-from enum import Enum
-from rnd_bot import RandomSelection
-from stratego_env import StrategoMultiAgentEnv, ObservationComponents, ObservationModes, GameVersions
-
 
 def counting_pieces(obs_pre, obs_curr):
     values = np.array([4, 1, 3, 2, 2.5, 3, 3.5, 4, 4.5, 5, 0, 3])
@@ -17,11 +13,14 @@ def counting_pieces(obs_pre, obs_curr):
     score = (pieces_diff * values).sum()
     return score
 
+
 def capture_pieces(obs_pre, obs_curr):
     pass
 
+
 def scouting_pieces(obs_pre, obs_curr):
     pass
+
 
 def step_score(obs_pre, obs_curr):
     if type(obs_pre) == type(None):
