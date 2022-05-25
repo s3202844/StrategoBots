@@ -32,7 +32,7 @@ if __name__ == '__main__':
                     pre = pre_obs[current_player]["partial_observation"]
                 curr = obs[current_player]["partial_observation"]
                 score = step_score(pre, curr)
-                print(score)
+                print(obs[1].keys())
                 pre_obs = obs
 
             current_player_action = RandomSelection(

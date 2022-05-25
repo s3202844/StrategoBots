@@ -1,4 +1,5 @@
 import math
+import copy
 import random
 import numpy as np
 
@@ -12,6 +13,7 @@ epsilon = 0.3
 min_budget = 20
 max_pool = 40
 C = 2**0.5
+
 
 class Node:
 
@@ -56,7 +58,6 @@ class Node:
         return w + C*(math.log(T)/self.num_visits())**0.5
 
 
-
 def _selection(node):
     '''
     Implementation of selection part of MCTS. Selection depends on UCB score.
@@ -67,6 +68,7 @@ def _selection(node):
             best_node = child
     return best_node
 
+
 def _expansion(node):
     '''
     Implementation of expansion part of MCTS. Always select a node from
@@ -76,6 +78,7 @@ def _expansion(node):
     res = node.off_pool.pop(ind)
     node.children.append(res)
     return res
+
 
 def _simulation(game_copy):
     '''
@@ -104,6 +107,7 @@ def _simulation(game_copy):
         else:
             break
 
+
 def _backpropagation(obs_pre, obs_curr, node):
     '''
     Implementation of backpropagation part of MCTS.
@@ -111,27 +115,21 @@ def _backpropagation(obs_pre, obs_curr, node):
     score = step_score(obs_pre, obs_curr)
     node.visit(score)
 
-def act(obs, player_id):
+
+def act(env, obs, player_id):
     '''
     Use MCTS to select an action.
     '''
-    # output the game situation
-    _brief_state(obs, player_id)
+    global min_budget, epsilon
     # create simulation environment
-    game_copy = copy.deepcopy(game)
-    game_copy.enable_forward_model()
-    game_copy.home_agent.human = True
-    game_copy.away_agent.human = True
-    # record root_step for reverting the game
-    root_step = game_copy.get_step()
+    game_copy = copy.deepcopy(env)
+
     # create root node, means the current state
     root_node = Node()
-
     # initialize off_pool of root_node
-    available_actions = game_copy.get_available_actions()
-    if len(available_actions) == 0:
-        return None
-    root_node.init_off_pool(available_actions)
+    action_mask = obs[player_id]["valid_actions_mask"]
+    root_node.init_off_pool(action_mask)
+
     # budget for simulation. Not too big or too small, make sure that MCTS
     # is runtime and action evaluation is reliable.
     budget = max(min_budget, len(root_node.off_pool) * 5)
@@ -140,13 +138,11 @@ def act(obs, player_id):
         prob = np.random.rand()
         if (prob > epsilon and len(root_node.children) > 0) or \
                 len(root_node.off_pool) == 0:
-            curr = _selection(root_node)
+            child_node = _selection(root_node)
         else:
-            curr = _expansion(root_node)
-        game_copy.step(curr.action)
-        _simulation(game_copy)
-        _backpropagation(game_copy, root_step, curr)
-    steps += 1
+            child_node = _expansion(root_node)
+        obs_curr = _simulation(game_copy, child_node)
+        _backpropagation(obs, obs_curr, child_node)
     # return action with highest UCB score
     res = _selection(root_node)
     return res.action
